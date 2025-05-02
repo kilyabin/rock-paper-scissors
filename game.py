@@ -1,5 +1,7 @@
 import random
+import ascii_art # Import the new file
 
+# Dictionary to hold text strings for different languages
 texts = {
     "ru": {
         "welcome": "Добро пожаловать в игру Камень, Ножницы, Бумага!",
@@ -72,7 +74,7 @@ texts = {
 }
 
 # Default language
-current_language = "en"
+current_language = "ru"
 
 def get_text(key):
     """Helper function to get text in the current language."""
@@ -80,10 +82,10 @@ def get_text(key):
 
 def get_player_choice_from_number(choice_number):
     """
-    Converts the number choice to its string representation.
-    1 -> rock
-    2 -> scissors
-    3 -> paper
+    Converts the number choice to its string representation (in the current language).
+    1 -> rock/камень
+    2 -> scissors/ножницы
+    3 -> paper/бумага
     """
     if choice_number == 1:
         return "камень" if current_language == "ru" else "rock"
@@ -94,10 +96,24 @@ def get_player_choice_from_number(choice_number):
     else:
         return None # Invalid number
 
+def get_base_move_name(localized_move_name):
+    """
+    Converts a localized move name back to its base (Russian) name for ASCII art lookup.
+    """
+    if localized_move_name in ["камень", "rock"]:
+        return "камень"
+    elif localized_move_name in ["ножницы", "scissors"]:
+        return "ножницы"
+    elif localized_move_name in ["бумага", "paper"]:
+        return "бумага"
+    return None
+
+
 def play_game():
     """
     Logic for a single round of the Rock, Paper, Scissors game.
     """
+    # Use language-specific choices for comparison
     choices = ["камень", "ножницы", "бумага"] if current_language == "ru" else ["rock", "scissors", "paper"]
 
     player_score = 0
@@ -122,8 +138,7 @@ def play_game():
                 print(get_text("returning_to_menu"))
                 return # Exit the play_game function
 
-            # Get player choice string from the number
-            # We need to map the number to the *current language's* word for the move
+            # Get player choice string from the number (localized)
             player_choice_str = get_player_choice_from_number(player_input)
 
             # Validate player input number
@@ -139,12 +154,31 @@ def play_game():
 
             print(get_text("computer_chose").format(computer_choice_str))
 
+            # --- Display ASCII Art ---
+            # Get the base move names for ASCII art lookup
+            player_base_move = get_base_move_name(player_choice_str)
+            computer_base_move = computer_choice_base # Computer choice is already base
+
+            player_art = ascii_art.get_ascii_art(player_base_move)
+            computer_art = ascii_art.get_ascii_art(computer_base_move)
+
+            if player_art and computer_art:
+                ascii_art.display_ascii_art_side_by_side(player_art, computer_art)
+            else:
+                print("Could not retrieve ASCII art.") # Fallback message
+
+            # --- End Display ASCII Art ---
+
+
             # Determine the winner using the base (language-agnostic) choices for logic
-            if player_choice_str == computer_choice_base:
+            # We need the base player choice for comparison
+            player_choice_base = get_base_move_name(player_choice_str)
+
+            if player_choice_base == computer_choice_base:
                 print(get_text("tie"))
-            elif (player_choice_str == "камень" and computer_choice_base == "ножницы") or \
-                 (player_choice_str == "ножницы" and computer_choice_base == "бумага") or \
-                 (player_choice_str == "бумага" and computer_choice_base == "камень"):
+            elif (player_choice_base == "камень" and computer_choice_base == "ножницы") or \
+                 (player_choice_base == "ножницы" and computer_choice_base == "бумага") or \
+                 (player_choice_base == "бумага" and computer_choice_base == "камень"):
                 print(get_text("player_wins_round"))
                 player_score += 1
             else:
